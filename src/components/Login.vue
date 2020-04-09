@@ -6,7 +6,7 @@
                 <img src="../assets/logo.png" alt=""/>
             </div>
             <!-- 登录表单区域 -->
-            <el-form :model="loginForm" :rules="loginRules" label-width="0px" class="login_form">
+            <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" label-width="0px" class="login_form">
                 <!-- 用户名 -->
                 <el-form-item prop="username">
                     <el-input v-model="loginForm.username" prefix-icon="iconfont icon-user"></el-input>
@@ -17,8 +17,8 @@
                 </el-form-item>
                 <!-- 按钮区域 -->
                 <el-form-item class="btns">
-                    <el-button type="primary">登录</el-button>
-                    <el-button type="info">重置</el-button>
+                    <el-button type="primary" @click="login">登录</el-button>
+                    <el-button type="info" @click="resetLoginForm">重置</el-button>
                 </el-form-item>
             </el-form>
         </div>
@@ -47,6 +47,25 @@ export default {
                     { min: 6, max: 10, message: '长度在 6 到 10 个字符', trigger: 'blur' }
                 ]
            }
+        };
+    },
+    methods: {
+        // 添加重置表单
+        resetLoginForm() {
+            this.$refs.loginFormRef.resetFields();
+        },
+        login() {
+            this.$refs.loginFormRef.validate(async valid => {
+                if (!valid) return;
+                const { data: res } = await this.$http.post('login', this.loginForm);
+                if (res.meta.status !== 200) return this.$message.error('登录失败');
+                this.$message.error('登录成功');
+                // console.log(res);
+                // 登录成功后，token保存在客户端sessionStorage中
+                window.sessionStorage.setItem('token', res.data.token);
+                // 跳转地址，主页
+                this.$router.push('/home');
+            });
         }
     }
 };
