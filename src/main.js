@@ -12,6 +12,13 @@ import 'element-ui/lib/theme-chalk/index.css';
 // 请求
 import axios from 'axios';
 Vue.prototype.$http = axios;
+// axios请求拦截
+axios.interceptors.request.use(config => {
+  console.log(config)
+  config.headers.Authorization = window.sessionStorage.getItem('token')
+  // 最后必须返回 config
+  return config
+})
 axios.defaults.baseURL = '/api';
 
 Vue.use(ElementUI); // 使用elementUI
