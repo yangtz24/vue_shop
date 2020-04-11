@@ -19,6 +19,7 @@
                 <el-form-item class="btns">
                     <el-button type="primary" @click="login">登录</el-button>
                     <el-button type="info" @click="resetLoginForm">重置</el-button>
+                    <a href="">去注册</a>
                 </el-form-item>
             </el-form>
         </div>
@@ -118,6 +119,6 @@ export default {
 
 .btns {
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
 }
 </style>
