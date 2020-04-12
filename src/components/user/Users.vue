@@ -47,7 +47,12 @@
               @click="showEditDialog(scope.row.id)"
             ></el-button>
             <!-- 删除 -->
-            <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+            <el-button
+              type="danger"
+              icon="el-icon-delete"
+              size="mini"
+              @click="removeUser(scope.row.id)"
+            ></el-button>
             <!-- 分配角色 -->
             <el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
               <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
@@ -96,7 +101,12 @@
     </el-dialog>
 
     <!-- 修改用户 -->
-    <el-dialog title="修改用户信息" :visible.sync="editDialogVisible" width="50%" @close="editDialogClosed">
+    <el-dialog
+      title="修改用户信息"
+      :visible.sync="editDialogVisible"
+      width="50%"
+      @close="editDialogClosed"
+    >
       <el-form ref="editFormRef" :model="editForm" :rules="editFormRules" label-width="80px">
         <el-form-item label="用户名">
           <el-input v-model="editForm.username" disabled></el-input>
@@ -334,7 +344,10 @@ export default {
       this.$refs.editFormRef.validate(async valid => {
         if (!valid) return
         // 发起修改用户信息请求
-        const { data: res } = await this.$http.put('rest/admin/' + this.editForm.id, this.editForm)
+        const { data: res } = await this.$http.put(
+          'rest/admin/' + this.editForm.id,
+          this.editForm
+        )
 
         if (res.code !== 200) return this.$message.error('更新失败！！！')
         // 关闭对话框
@@ -344,6 +357,29 @@ export default {
         // 提示操作成功按钮
         this.$message.success('更新用户信息成功！！！')
       })
+    },
+    // 删除用户
+    async removeUser(id) {
+      const result = await this.$confirm('永久删除该用户, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).catch(err => err)
+
+      // 如果用户确认删除，则返回字符串  confirm
+      // 如果用户取消删除，则返回字符串  cancle
+      if (result !== 'confirm') {
+        return this.$message.info('已取消删除')
+      }
+      // 发起删除请求
+      const { data: res } = await this.$http.delete('rest/admin' + id)
+
+      if (res.code !== 200) {
+        return this.$message.error('删除用户失败!')
+      }
+
+      this.$message.success('删除用户成功')
+      this.getUserList()
     }
   }
 }
