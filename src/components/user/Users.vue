@@ -345,7 +345,7 @@ export default {
         if (!valid) return
         // 发起修改用户信息请求
         const { data: res } = await this.$http.put(
-          'rest/admin/' + this.editForm.id,
+          'rest/admin/modify/' + this.editForm.id,
           this.editForm
         )
 
@@ -372,12 +372,12 @@ export default {
         return this.$message.info('已取消删除')
       }
       // 发起删除请求
-      const { data: res } = await this.$http.delete('rest/admin' + id)
+      const { data: res } = await this.$http.delete('rest/admin/remove/' + id)
 
       if (res.code !== 200) {
         return this.$message.error('删除用户失败!')
       }
-
+      // 操作成功
       this.$message.success('删除用户成功')
       this.getUserList()
     }
