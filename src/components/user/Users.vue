@@ -29,7 +29,7 @@
         <el-table-column label="电话" prop="mobile"></el-table-column>
         <el-table-column label="昵称" prop="nickName"></el-table-column>
         <el-table-column label="角色" prop="username"></el-table-column>
-        <!-- <el-table-column label="创建时间" prop="createTime"></!-->
+        <el-table-column label="创建时间" prop="createTime"></el-table-column>
         -->
         <el-table-column label="状态" prop="state">
           <template slot-scope="scope">
@@ -272,7 +272,6 @@ export default {
       })
       if (res.code !== 200) return this.$message.error('获取用户列表失败！')
       // 用户列表数据
-      console.log(res.data.content)
       this.userList = res.data.content
       // 列表总数
       this.total = res.data.totalElements
