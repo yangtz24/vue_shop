@@ -3,8 +3,8 @@ module.exports = {
   publicPath: '/', // 设置打包文件相对路径
   devServer: {
     // open: process.platform === 'darwin',
-    // host: 'localhost',
-    // port: 8071,
+    host: 'localhost',
+    port: 8081,
     // open: true, //配置自动启动浏览器
     
     proxy: {

@@ -11,11 +11,15 @@
 
     <!-- 卡片视图 -->
     <el-card>
+      <el-col>
+        <el-button type="primary">添加权限</el-button>
+      </el-col>
+
       <el-table :data="authorityList" border stripe>
         <el-table-column type="index"></el-table-column>
-        <el-table-column label="权限名称" prop></el-table-column>
-        <el-table-column label="路径" prop></el-table-column>
-        <el-table-column label="权限等级" prop>
+        <el-table-column label="权限名称" prop="name"></el-table-column>
+        <el-table-column label="路径" prop="uri"></el-table-column>
+        <el-table-column label="权限等级" prop="sort">
           <template slot-scope="scope">
             <el-tag v-if="scope.row.level = '0'">一级</el-tag>
             <el-tag type="success" v-if="scope.row.level = '1'">二级</el-tag>
@@ -23,6 +27,17 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <!-- 分页区域 -->
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page.sync="queryInfo.pageNumber"
+        :page-sizes="[5, 10, 15, 20]"
+        :page-size="queryInfo.pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="total"
+      ></el-pagination>
     </el-card>
   </div>
 </template>
@@ -34,19 +49,40 @@ export default {
   },
   data() {
     return {
+      // 参数
+      queryInfo: {
+        key: '',
+        currentPage: 1,
+        pageSize: 10
+      },
       // 权限列表
-      authorityList: []
+      authorityList: [],
+      total: 0
     }
   },
   methods: {
     // 获取权限列表
     async getAuthorityList() {
-      const { data: res } = await this.$http.get('rest/xxx')
+      const { data: res } = await this.$http.get('rest/permission', {
+        params: this.queryInfo
+      })
       if (res.code !== 200) {
         return this.$message.error('获取权限列表失败！！！')
       }
 
       this.authorityList = res.data.content
+      // 列表总数
+      this.total = res.data.totalElements
+    },
+    // 监听 pageSize
+    handleSizeChange(newPageSize) {
+      this.queryInfo.pageSize = newPageSize
+      this.getAuthorityList()
+    },
+    // 监听 页码 值变化
+    handleCurrentChange(newPageNum) {
+      this.queryInfo.pageNumber = newPageNum
+      this.getAuthorityList()
     },
     // 删除权限信息
     async remove(role, aId) {
@@ -77,4 +113,8 @@ export default {
 </script>
 
 <style lang="less" scoped>
+.el-tag {
+  display: flexbox;
+  margin-right: 15px;
+}
 </style>

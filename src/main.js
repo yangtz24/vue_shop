@@ -14,7 +14,6 @@ import axios from 'axios';
 Vue.prototype.$http = axios;
 // axios请求拦截
 axios.interceptors.request.use(config => {
-  console.log(config)
   config.headers.Authorization = window.sessionStorage.getItem('token')
   // 最后必须返回 config
   return config

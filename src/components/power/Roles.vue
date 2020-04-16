@@ -67,7 +67,7 @@
         <el-table-column label="角色名称" prop="name"></el-table-column>
         <el-table-column label="角色描述" prop="description"></el-table-column>
         <el-table-column label="角色数量" prop="adminCount"></el-table-column>
-        <el-table-column label="创建时间" prop="createTime"></el-table-column>
+        <el-table-column label="创建时间" prop="createTimeStr"></el-table-column>
         <el-table-column label="状态" prop="description">
           <template slot-scope="scope">
             <!-- scope 作用域插槽  scope.row获取行数据 -->
@@ -118,7 +118,6 @@
       <el-tree
         :data="assignPermissionList"
         :props="treeProps"
-        @node-click="handleNodeClick"
         show-checkbox
         node-key="id"
         default-expand-all
@@ -232,10 +231,11 @@ export default {
     async assignPermissionDialog(role) {
       this.roleId = role.id
       // 获取权限列表  树状结构
-      const { data: res } = await this.$http.get('rest/role/')
+      const { data: res } = await this.$http.get('rest/permission/')
        if (res.code !== 200) {
         return this.$message.error('获取权限失败！！！')
       }
+      console.log(res.data)
 
       this.assignPermissionList = res.data
       this.assignPermissionDialogVisible = true
