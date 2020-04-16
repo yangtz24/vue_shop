@@ -81,7 +81,6 @@ export default {
       const { data: res } = await this.$http.get('rest/menu')
       if (res.code !== 200) return this.$message.error(res.message)
       this.menuList = res.data
-      console.log(res.data)
     },
     // 点击按钮实现菜单折叠展开
     toggleCollapse() {
