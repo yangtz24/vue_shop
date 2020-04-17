@@ -24,7 +24,7 @@
           <template slot-scope="scope">
             <el-row
               :class="['bdbottom', i1 === 0 ? 'bdtop' : '', 'vcenter']"
-              v-for="(item1, i1) in scope.row.children"
+              v-for="(item1, i1) in scope.row.permissionList"
               :key="item1.id"
             >
               <!-- 渲染一级权限信息 -->
@@ -231,7 +231,7 @@ export default {
     async assignPermissionDialog(role) {
       this.roleId = role.id
       // 获取权限列表  树状结构
-      const { data: res } = await this.$http.get('rest/permission/')
+      const { data: res } = await this.$http.get('rest/role/' + role.id + '/permissions')
        if (res.code !== 200) {
         return this.$message.error('获取权限失败！！！')
       }
