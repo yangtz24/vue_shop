@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- 面包区域导航 -->
-    <el-breadcrumb separator="el-icon-arrow-right">
+    <el-breadcrumb separator-class="el-icon-arrow-right">
       <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
       <el-breadcrumb-item>
         <a href="/">商品管理</a>
@@ -41,10 +41,10 @@
           <el-tag type="warning" size="mini" v-else>三级</el-tag>
         </template>
         <!-- 操作 -->
-        <template slot="opt" slot-scope="scope">
+        <template slot="opt">
           <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
-          <el-button type="primary" icon="el-icon-delete" size="mini"></el-button>
-          <el-button type="primary" icon="el-icon-search" size="mini">搜索</el-button>
+          <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+          <el-button type="primary" icon="el-icon-search" size="mini"></el-button>
         </template>
       </tree-table>
 
