@@ -83,7 +83,7 @@
               size="mini"
               @click="remove(scope.row.id)"
             ></el-button>
-            <el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
+            <el-tooltip effect="dark" content="分配权限" placement="top" :enterable="false">
               <el-button
                 type="warning"
                 icon="el-icon-setting"

@@ -44,7 +44,7 @@
         <template slot="opt">
           <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
           <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
-          <el-button type="primary" icon="el-icon-search" size="mini"></el-button>
+          <!-- <el-button type="primary" icon="el-icon-search" size="mini"></el-button> -->
         </template>
       </tree-table>
 
@@ -61,11 +61,36 @@
     </el-card>
 
     <!-- 添加分类的对话框 -->
-    <el-dialog title="添加分类" :visible.sync="addCategoryDialogVisible" width="50%">
-      <span>这是一段信息</span>
+    <el-dialog
+      title="添加分类"
+      :visible.sync="addCategoryDialogVisible"
+      width="50%"
+      @close="categoryDialogClosed"
+    >
+      <el-form
+        ref="addCategoryRef"
+        :model="addCategoryForm"
+        :rules="addCategoryRules"
+        label-width="100px"
+      >
+        <el-form-item label="分类名称：" prop="name">
+          <el-input v-model="addCategoryForm.name"></el-input>
+        </el-form-item>
+        <el-form-item label="分类等级：">
+          <!-- options: 指定数据源 -->
+          <el-cascader
+            v-model="selectKeys"
+            :options="parentCategoryList"
+            :props="cascaderProps"
+            @change="parentCategoryChange"
+            clearable
+            change-on-select
+          ></el-cascader>
+        </el-form-item>
+      </el-form>
       <span slot="footer" class="dialog-footer">
         <el-button @click="addCategoryDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addCategoryDialogVisible = false">确 定</el-button>
+        <el-button type="primary" @click="addCategory">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -116,7 +141,35 @@ export default {
         }
       ],
       // 控制添加分类对话框的显示与隐藏
-      addCategoryDialogVisible: false
+      addCategoryDialogVisible: false,
+      // 添加分类的表单数据对象
+      addCategoryForm: {
+        name: '',
+        // 父级分类
+        parentId: 0,
+        // 分类等级
+        level: 0
+      },
+      // 验证规则对象
+      addCategoryRules: {
+        name: [
+          {
+            required: true,
+            message: '请输入分类名称',
+            trigger: 'blur'
+          }
+        ]
+      },
+      // 父级分类列表
+      parentCategoryList: [],
+      // 指定级联选择器的配置对象
+      cascaderProps: {
+        value: 'id',
+        lable: 'name',
+        children: 'children'
+      },
+      // 选中的父级分类ID
+      selectKeys: []
     }
   },
   methods: {
@@ -145,7 +198,55 @@ export default {
     },
     // 显示添加对话框
     showAddCategoryDialog() {
+      // 获取分类列表
+      this.getParentCategoryList()
       this.addCategoryDialogVisible = true
+    },
+    // 获取父级分类列表
+    async getParentCategoryList() {
+      const { data: res } = await this.$http.get('rest/goods/category', {
+        params: { type: 2 }
+      })
+      if (res.code !== 200) {
+        return this.$message.error('获取父级分类列表失败！！！')
+      }
+
+      this.parentCategoryList = res.data
+    },
+    // 选择项变化触发改变事件
+    parentCategoryChange() {
+      if (this.selectKeys.length > 0) {
+        this.addCategoryForm.parentId = this.selectKeys[
+          this.selectKeys.length - 1
+        ]
+
+        // 选中赋值
+        this.addCategoryForm.level = this.selectKeys.length
+        return 0
+      } else {
+        this.addCategoryForm.parentId = 0
+        this.addCategoryForm.level = 0
+      }
+    },
+    // 添加分类事件
+    addCategory() {
+      this.$refs.addCategoryRef.validate(async valid => {
+        if (!valid) return
+        const { data: res } = await this.$http.post('rest/goods/category', this.addCategoryForm)
+        if (res.code !== 200) {
+          return this.$message.error('添加分类失败！！！')
+          }
+        this.$message.error('添加分类成功！！！')
+        this.getCategoryList()
+        this.addCategoryDialogVisible = false
+      })
+    },
+    // 关闭对话框事件
+    categoryDialogClosed() {
+      this.$refs.addCategoryRef.resetFields();
+      this.selectKeys = []
+      this.addCategoryForm.level = 0
+      this.addCategoryForm.parentId = 0
     }
   }
 }
@@ -154,5 +255,9 @@ export default {
 <style lang="less" scoped>
 .treeTable {
   margin-top: 15px;
+}
+
+.el-cascader {
+  width: 100%;
 }
 </style>
