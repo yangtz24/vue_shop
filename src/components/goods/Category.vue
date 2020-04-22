@@ -31,7 +31,7 @@
       >
         <!-- 是否有效 -->
         <template slot="isok" slot-scope="scope">
-          <i class="el-icon-success" v-if="scope.row.deleted === false"></i>
+          <i class="el-icon-success" v-if="scope.row.deleted == 0"></i>
           <i class="el-icon-error" v-else></i>
         </template>
         <!-- 排序 -->
@@ -41,9 +41,14 @@
           <el-tag type="warning" size="mini" v-else>三级</el-tag>
         </template>
         <!-- 操作 -->
-        <template slot="opt">
-          <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
-          <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+        <template slot="opt" slot-scope="scope">
+          <el-button type="primary" icon="el-icon-edit" size="mini" @click="showEditDialog(scope.row.id)"></el-button>
+          <el-button
+            type="danger"
+            icon="el-icon-delete"
+            size="mini"
+            @click="removeCate(scope.row.id)"
+          ></el-button>
           <!-- <el-button type="primary" icon="el-icon-search" size="mini"></el-button> -->
         </template>
       </tree-table>
@@ -91,6 +96,40 @@
       <span slot="footer" class="dialog-footer">
         <el-button @click="addCategoryDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="addCategory">确 定</el-button>
+      </span>
+    </el-dialog>
+
+    <!-- 编辑分类的对话框 -->
+    <el-dialog
+      title="编辑分类"
+      :visible.sync="editCategoryDialogVisible"
+      width="50%"
+      @close="editCategoryDialogClosed"
+    >
+      <el-form
+        ref="editCategoryRef"
+        :model="editCategoryForm"
+        :rules="editCategoryRules"
+        label-width="100px"
+      >
+        <el-form-item label="分类名称：" prop="name">
+          <el-input v-model="editCategoryForm.name"></el-input>
+        </el-form-item>
+        <el-form-item label="分类等级：">
+          <!-- options: 指定数据源 -->
+          <el-cascader
+            v-model="selectKeys"
+            :options="parentCategoryList"
+            :props="cascaderProps"
+            @change="parentCategoryChange"
+            clearable
+            change-on-select
+          ></el-cascader>
+        </el-form-item>
+      </el-form>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="editCategoryDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editCategory">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -160,12 +199,30 @@ export default {
           }
         ]
       },
+      editCategoryDialogVisible: false,
+      editCategoryForm: {
+        name: '',
+        // 父级分类
+        parentId: 0,
+        // 分类等级
+        level: 0
+      },
+      // 验证规则对象
+      editCategoryRules: {
+        name: [
+          {
+            required: true,
+            message: '请输入分类名称',
+            trigger: 'blur'
+          }
+        ]
+      },
       // 父级分类列表
       parentCategoryList: [],
       // 指定级联选择器的配置对象
       cascaderProps: {
         value: 'id',
-        lable: 'name',
+        label: 'name',
         children: 'children'
       },
       // 选中的父级分类ID
@@ -204,14 +261,25 @@ export default {
     },
     // 获取父级分类列表
     async getParentCategoryList() {
-      const { data: res } = await this.$http.get('rest/goods/category', {
-        params: { type: 2 }
-      })
+      const { data: res } = await this.$http.get('rest/goods/category/parent')
       if (res.code !== 200) {
         return this.$message.error('获取父级分类列表失败！！！')
       }
 
-      this.parentCategoryList = res.data
+      this.parentCategoryList = this.getTreeData(res.data)
+    },
+    // 解决出现空面板情况
+    getTreeData(data) {
+      data.forEach(element => {
+        if (element.children.length < 1) {
+          // children若为空数组，则将children设为 null
+          element.children = null
+        } else {
+          // children若不为空数组，则继续 递归调用 本方法
+          this.getTreeData(element.children)
+        }
+      })
+      return data
     },
     // 选择项变化触发改变事件
     parentCategoryChange() {
@@ -232,21 +300,65 @@ export default {
     addCategory() {
       this.$refs.addCategoryRef.validate(async valid => {
         if (!valid) return
-        const { data: res } = await this.$http.post('rest/goods/category', this.addCategoryForm)
+        const { data: res } = await this.$http.post(
+          'rest/goods/category',
+          this.addCategoryForm
+        )
         if (res.code !== 200) {
           return this.$message.error('添加分类失败！！！')
-          }
-        this.$message.error('添加分类成功！！！')
+        }
+        this.$message.success('添加分类成功！！！')
         this.getCategoryList()
         this.addCategoryDialogVisible = false
       })
     },
     // 关闭对话框事件
     categoryDialogClosed() {
-      this.$refs.addCategoryRef.resetFields();
+      this.$refs.addCategoryRef.resetFields()
       this.selectKeys = []
       this.addCategoryForm.level = 0
       this.addCategoryForm.parentId = 0
+    },
+    editCategoryDialogClosed() {
+      this.$refs.editCategoryRef.resetFields()
+      this.selectKeys = []
+      this.editCategoryForm.level = 0
+      this.editCategoryForm.parentId = 0
+    },
+    // 删除
+    async removeCate(id) {
+      const { data: res } = await this.$http.delete('rest/goods/category/' + id)
+      if (res.code !== 200) {
+        return this.$message.error('删除分类失败！！！')
+      }
+      this.$message.success('删除分类成功！！！')
+      this.getCategoryList()
+    },
+    editCategory() {
+      this.$refs.editCategoryRef.validate(async valid => {
+        if (!valid) return
+        const { data: res } = await this.$http.put(
+          'rest/goods/category/' + this.editCategoryForm.id,
+          this.editCategoryForm
+        )
+        if (res.code !== 200) {
+          return this.$message.error('修改分类失败！！！')
+        }
+        this.$message.success('修改分类成功！！！')
+        this.getCategoryList()
+        this.editCategoryDialogVisible = false
+      })
+    },
+    async showEditDialog(id) {
+      const { data: res } = await this.$http.get('rest/goods/category/' + id)
+      if (res.code !== 200) {
+          return this.$message.error('获取详情数据失败！！！')
+        }
+
+      // 查询成功，保存数据
+      this.editCategoryForm = res.data
+      this.getParentCategoryList()
+      this.editCategoryDialogVisible = true
     }
   }
 }

@@ -56,7 +56,12 @@
                   @blur="handleInputConfirm"
                 ></el-input>
                 <!-- 添加按钮 -->
-                <el-button v-else class="button-new-tag" size="small" @click="showInput(scope.row)">+ New Tag</el-button>
+                <el-button
+                  v-else
+                  class="button-new-tag"
+                  size="small"
+                  @click="showInput(scope.row)"
+                >+ New Tag</el-button>
               </template>
             </el-table-column>
             <!-- 索引列 -->
@@ -275,21 +280,21 @@ export default {
             sel: this.activeName
           }
         )
+
+        if (res.code !== 200) {
+          return this.$message.error('添加参数失败！！！')
+        }
+
+        this.$message.success('添加参数成功！！！')
+        this.addDialogVisible = false
+        this.getParamsData()
       })
-
-      if (res.code !== 200) {
-        return this.$message.error('添加参数失败！！！')
-      }
-
-      this.$message.success('添加参数成功！！！')
-      this.addDialogVisible = false
-      this.getParamsData()
     },
     // 编辑
     async showEditDialog(attrId) {
       // 查询当前参数的信息
       const { data: res } = await this.$$http.get(
-        `rest/goods/category/${this.cateId}/a: ttributes/${attrId}`,
+        `rest/goods/category/${this.cateId}/attributes/${attrId}`,
         {
           params: { sel: this.activeName }
         }
@@ -317,18 +322,18 @@ export default {
             sel: this.activeName
           }
         )
+
+        if (res.code !== 200) {
+          return this.$message.error('修改参数失败！！！')
+        }
+
+        this.$message.success('修改参数成功！！！')
+        this.addDialogVisible = false
+        this.getParamsData()
       })
-
-      if (res.code !== 200) {
-        return this.$message.error('修改参数失败！！！')
-      }
-
-      this.$message.success('修改参数成功！！！')
-      this.addDialogVisible = false
-      this.getParamsData()
     },
     // 删除
-    async removeParams() {
+    async removeParams(attrId) {
       const confirmResult = await this.$confirm(
         '此操作将永久删除该参数, 是否继续?',
         '提示',

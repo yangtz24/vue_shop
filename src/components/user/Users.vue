@@ -28,7 +28,7 @@
         <el-table-column label="邮箱" prop="email"></el-table-column>
         <el-table-column label="电话" prop="mobile"></el-table-column>
         <el-table-column label="昵称" prop="nickName"></el-table-column>
-        <el-table-column label="角色" prop="username"></el-table-column>
+        <el-table-column label="角色" prop="roles[0].name"></el-table-column>
         <el-table-column label="创建时间" prop="createTimeStr"></el-table-column>-->
         <el-table-column label="状态" prop="state">
           <template slot-scope="scope">
