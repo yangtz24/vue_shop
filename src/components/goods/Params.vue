@@ -178,7 +178,7 @@ export default {
       // 级联选择框配置对象
       cateProps: {
         value: 'id',
-        lable: 'name',
+        label: 'name',
         children: 'children'
       },
       // 选择的数据
@@ -221,7 +221,20 @@ export default {
         return this.$message.error('获取商品全部分类失败！！！')
       }
 
-      this.categoryList = res.data
+      this.categoryList = this.getTreeData(res.data)
+    },
+    // 解决出现空面板情况
+    getTreeData(data) {
+      data.forEach(element => {
+        if (element.children.length < 1) {
+          // children若为空数组，则将children设为 null
+          element.children = null
+        } else {
+          // children若不为空数组，则继续 递归调用 本方法
+          this.getTreeData(element.children)
+        }
+      })
+      return data
     },
     // 监听选择项的变化
     handleChange() {
@@ -240,7 +253,7 @@ export default {
 
       // 根据所选分类ID，获取参数
       const { data: res } = await this.$http.get(
-        `rest/goods/category/${this.id}/attributes`,
+        `rest/attribute/${this.id}`,
         {
           params: { sel: this.activeName }
         }
