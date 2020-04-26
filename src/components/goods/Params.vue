@@ -44,7 +44,12 @@
             <el-table-column type="expand">
               <template slot-scope="scope">
                 <!-- 循环渲染tag标签 -->
-                <el-tag v-for="(item, i) in scope.row.attrVals" :key="i" closable>{{item}}</el-tag>
+                <el-tag
+                  v-for="(item, i) in scope.row.attrVals"
+                  :key="i"
+                  closable
+                  @close="handleClosed(i, scope.row)"
+                >{{item}}</el-tag>
                 <!-- 输入的文本框 -->
                 <el-input
                   class="input-new-tag"
@@ -52,8 +57,8 @@
                   v-model="scope.row.inputValue"
                   ref="saveTagInput"
                   size="small"
-                  @keyup.enter.native="handleInputConfirm"
-                  @blur="handleInputConfirm"
+                  @keyup.enter.native="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm(scope.row)"
                 ></el-input>
                 <!-- 添加按钮 -->
                 <el-button
@@ -248,16 +253,15 @@ export default {
     async getParamsData() {
       if (this.selectedCateKeys.length !== 3) {
         this.selectedCateKeys = []
+        this.manyTableData = []
+        this.onlyTableData = []
         return 0
       }
 
       // 根据所选分类ID，获取参数
-      const { data: res } = await this.$http.get(
-        `rest/attribute/${this.id}`,
-        {
-          params: { sel: this.activeName }
-        }
-      )
+      const { data: res } = await this.$http.get(`rest/attribute/${this.id}`, {
+        params: { sel: this.activeName }
+      })
       if (res.code !== 200) {
         return this.$message.error('获取商品参数列表失败！！！')
       }
@@ -373,10 +377,51 @@ export default {
       this.getParamsData()
     },
     // 文本框失去焦点
-    handleInputConfirm() {},
+    async handleInputConfirm(row) {
+      if (row.inputValue.length === 0) {
+        row.inputValue = ''
+        row.inputVisible = false
+        return 0
+      }
+
+      // 输入内容，后续处理
+      row.vals.push(row.inputValue.trim())
+      row.inputValue = ''
+      row.inputVisible = false
+
+      // 添加请求
+      setAttrVals(row)
+    },
+    setAttrVals(row) {
+      // 添加参数请求
+      const { data: res } = await this.$http.put(
+        `rest/attribute/${this.cateId}/attributes/${row.attrId}`,
+        {
+          attr_name: row.attr_name,
+          attr_sel: row.attr_sel,
+          attr_vals: row.attrVals.join('')
+        }
+      )
+
+      if (res.code !== 200) {
+        return this.$message.error('修改参数失败！！！')
+      }
+      this.$message.success('修改参数成功！！！')
+    },
     // 文本输入框
     showInput(row) {
       row.inputVisible = true
+      // 文本框自动获得焦点
+      // $nextTick：当页面元素被重新渲染之后，会被调用
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus()
+      })
+    },
+    handleClosed(i, row) {
+      row.attr_vals.splice(i, 1)
+
+      this.setAttrVals(row)
+
     }
   },
   // 计算属性
