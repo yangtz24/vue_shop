@@ -222,6 +222,7 @@ export default {
       }
 
       this.categoryList = this.getTreeData(res.data)
+      console.log(this.categoryList)
     },
     // 解决出现空面板情况
     getTreeData(data) {
@@ -251,11 +252,14 @@ export default {
         return 0
       }
 
+      // 获取ID
+      const id = this.selectedCateKeys[this.selectedCateKeys.length - 1]
+
       // 根据所选分类ID，获取参数
       const { data: res } = await this.$http.get(
-        `rest/attribute/${this.id}`,
+        `rest/attribute/${id}/attributes`,
         {
-          params: { sel: this.activeName }
+          params: { type: this.activeName }
         }
       )
       if (res.code !== 200) {
