@@ -41,6 +41,7 @@
           >添加参数</el-button>
           <!-- 动态参数数据表格 -->
           <el-table :data="manyTableData" border stripe>
+            <!-- 展开行 -->
             <el-table-column type="expand">
               <template slot-scope="scope">
                 <!-- 循环渲染tag标签 -->
@@ -100,7 +101,35 @@
           >添加属性</el-button>
           <!-- 静态属性数据表格 -->
           <el-table :data="onlyTableData" border stripe>
-            <el-table-column type="expand"></el-table-column>
+            <!-- 展开行 -->
+            <el-table-column type="expand">
+              <template slot-scope="scope">
+                <!-- 循环渲染tag标签 -->
+                <el-tag
+                  v-for="(item, i) in scope.row.attrVals"
+                  :key="i"
+                  closable
+                  @close="handleClosed(i, scope.row)"
+                >{{item}}</el-tag>
+                <!-- 输入的文本框 -->
+                <el-input
+                  class="input-new-tag"
+                  v-if="scope.row.inputVisible"
+                  v-model="scope.row.inputValue"
+                  ref="saveTagInput"
+                  size="small"
+                  @keyup.enter.native="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm(scope.row)"
+                ></el-input>
+                <!-- 添加按钮 -->
+                <el-button
+                  v-else
+                  class="button-new-tag"
+                  size="small"
+                  @click="showInput(scope.row)"
+                >+ New Tag</el-button>
+              </template>
+            </el-table-column>
             <!-- 索引列 -->
             <el-table-column type="index"></el-table-column>
             <el-table-column label="属性名称" prop="name"></el-table-column>
@@ -227,6 +256,7 @@ export default {
       }
 
       this.categoryList = this.getTreeData(res.data)
+      console.log(this.categoryList)
     },
     // 解决出现空面板情况
     getTreeData(data) {
@@ -258,10 +288,16 @@ export default {
         return 0
       }
 
+      // 获取ID
+      const id = this.selectedCateKeys[this.selectedCateKeys.length - 1]
+
       // 根据所选分类ID，获取参数
-      const { data: res } = await this.$http.get(`rest/attribute/${this.id}`, {
-        params: { sel: this.activeName }
-      })
+      const { data: res } = await this.$http.get(
+        `rest/attribute/${id}/attributes`,
+        {
+          params: { type: this.activeName }
+        }
+      )
       if (res.code !== 200) {
         return this.$message.error('获取商品参数列表失败！！！')
       }
@@ -390,9 +426,9 @@ export default {
       row.inputVisible = false
 
       // 添加请求
-      setAttrVals(row)
+      this.setAttrVals(row)
     },
-    setAttrVals(row) {
+    async setAttrVals(row) {
       // 添加参数请求
       const { data: res } = await this.$http.put(
         `rest/attribute/${this.cateId}/attributes/${row.attrId}`,
@@ -421,7 +457,6 @@ export default {
       row.attr_vals.splice(i, 1)
 
       this.setAttrVals(row)
-
     }
   },
   // 计算属性

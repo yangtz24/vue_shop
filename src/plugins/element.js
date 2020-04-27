@@ -29,7 +29,9 @@ import {
     Option,
     Cascader,
     Alert,
-    Tabs
+    Tabs,
+    Steps,
+    Step
  } from 'element-ui'
 
 Vue.use(Button)
@@ -60,5 +62,7 @@ Vue.use(Option)
 Vue.use(Cascader)
 Vue.use(Alert)
 Vue.use(Tabs)
+Vue.use(Steps)
+Vue.use(Step)
 Vue.prototype.$message = Message
 Vue.prototype.$confirm = MessageBox.confirm
