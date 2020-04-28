@@ -33,7 +33,6 @@
       >
         <el-tabs :tab-position="'left'" v-model="activeIndex">
           <el-tab-pane label="基本信息" name="0">
-            基本信息
             <el-form-item label="商品名称" prop="name">
               <el-input v-model="addForm.name"></el-input>
             </el-form-item>
@@ -70,8 +69,10 @@ export default {
         weight: 0,
         amount: 0
       },
+      // 输入框验证
       addFormRules: {
-        name: [{ requried: true, message: '请输入商品名称', trigger: 'blur' }],
+        name: [{ requried: true, message: '请输入商品名称', trigger: 'blur' },
+        { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }],
         price: [{ requried: true, message: '请输入商品价格', trigger: 'blur' }],
         weight: [{ requried: true, message: '请输入商品重量', trigger: 'blur' }],
         amount: [{ requried: true, message: '请输入商品数量', trigger: 'blur' }]

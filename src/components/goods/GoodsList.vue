@@ -24,7 +24,7 @@
           </el-input>
         </el-col>
         <el-col :span="4">
-          <el-button type="primary" @click="addGoodPage">添加商品</el-button>
+          <el-button type="primary" @click="addGoodsPage">添加商品</el-button>
         </el-col>
       </el-row>
 
@@ -33,10 +33,14 @@
         <!-- 索引列 -->
         <el-table-column type="index"></el-table-column>
         <el-table-column label="商品名称" prop="name"></el-table-column>
-        <el-table-column label="商品价格(元)" prop="description" width="90px"></el-table-column>
-        <el-table-column label="商品重量" prop="adminCount" width="80px"></el-table-column>
-        <el-table-column label="创建时间" prop="createTimeStr" width="150px">
-          <template slot-scope="scope">{{scope.row.createTime | dateFormate}}</template>
+        <el-table-column label="商品价格(元)" prop="price" width="110px"></el-table-column>
+        <el-table-column label="商品重量(kg)" prop="weight" width="120px"></el-table-column>
+        <el-table-column label="商品库存" prop="amount" width="100px"></el-table-column>
+        <!-- <el-table-column label="商品" prop="introduce" width="80px"></el-table-column> -->
+        <el-table-column label="商品热卖数量" prop="hotNumber" width="120px"></el-table-column>
+        <el-table-column label="是否促销" prop="isPromote" width="100px"></el-table-column>
+        <el-table-column label="创建时间" prop="createTime" width="180px">
+          <template slot-scope="scope">{{scope.row.createTime | dataFormate}}</template>
         </el-table-column>
         <el-table-column label="操作" width="130px">
           <template slot-scope="scope">
@@ -89,6 +93,7 @@ export default {
         params: this.queryInfo
       })
       if (res.code !== 200) return this.$message.error('获取商品列表失败！')
+
       // 用户列表数据
       this.goodsList = res.data.content
       // 列表总数
@@ -103,34 +108,34 @@ export default {
     handleCurrentChange(newPageNum) {
       this.queryInfo.pageNumber = newPageNum
       this.getGoodsList()
-    }
-  },
-  async remove(id) {
-    const confirmResult = await this.$confirm(
-      '此操作将永久删除, 是否继续?',
-      '提示',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
+    },
+    async remove(id) {
+      const confirmResult = await this.$confirm(
+        '此操作将永久删除, 是否继续?',
+        '提示',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      ).catch(err => err)
+
+      if (confirmResult !== 'confirm') {
+        return this.$message.info('取消删除！！')
       }
-    ).catch(err => err)
 
-    if (confirmResult !== 'confirm') {
-      return this.$message.info('取消删除！！')
-    }
+      const { data: res } = await this.$http.delete(`rest/goods/remove/${id}`)
+      if (res.code !== 200) {
+        this.$message.error('删除商品失败！！！')
+      }
 
-    const { data: res } = await this.$http.delete(`rest/goods/remove/${id}`)
-    if (res.code !== 200) {
-      this.$message.error('删除商品失败！！！')
-    }
-
-    this.$message.success('删除商品成功！！！')
-    //  刷新列表
-    this.getGoodsList()
-  },
-  addGoodPage() {
+      this.$message.success('删除商品成功！！！')
+      //  刷新列表
+      this.getGoodsList()
+    },
+    addGoodsPage() {
       this.$router.push('goods/add')
+    }
   }
 }
 </script>
