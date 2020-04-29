@@ -100,18 +100,18 @@ export default {
       // 输入框验证
       addFormRules: {
         name: [
-          { requried: true, message: '请输入商品名称', trigger: 'blur' },
+          { required: true, message: '请输入商品名称', trigger: 'blur' },
           { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
         ],
-        price: [{ requried: true, message: '请输入商品价格', trigger: 'blur' }],
+        price: [{ required: true, message: '请输入商品价格', trigger: 'blur' }],
         weight: [
-          { requried: true, message: '请输入商品重量', trigger: 'blur' }
+          { required: true, message: '请输入商品重量', trigger: 'blur' }
         ],
         amount: [
-          { requried: true, message: '请输入商品数量', trigger: 'blur' }
+          { required: true, message: '请输入商品数量', trigger: 'blur' }
         ],
         category: [
-          { requried: true, message: '请输入商品分类', trigger: 'blur' }
+          { required: true, message: '请输入商品分类', trigger: 'blur' }
         ]
       },
       cateList: [],
@@ -129,12 +129,25 @@ export default {
   methods: {
     // 获取所有商品分类数据
     async getCateList() {
-      const { data: res } = await this.$http.get('rest/goods/category/all')
+      const { data: res } = await this.$http.get('rest/goods/category/parent')
       if (res.code !== 200) {
         return this.$message.error('获取商品分类失败！！！')
       }
 
-      this.cateList = res.data
+      this.cateList = this.getTreeData(res.data)
+    },
+    // 解决出现空面板情况
+    getTreeData(data) {
+      data.forEach(element => {
+        if (element.children.length < 1) {
+          // children若为空数组，则将children设为 null
+          element.children = null
+        } else {
+          // children若不为空数组，则继续 递归调用 本方法
+          this.getTreeData(element.children)
+        }
+      })
+      return data
     },
     handleChange() {
       if (this.addForm.category.length === 1) {
@@ -152,7 +165,7 @@ export default {
       if (this.activeIndex === '1') {
         // 根据分类ID
         const { data: res } = await this.$http.get(
-          `rest/goods/category/${this.cateId}/attributes`,
+          `rest/attribute/${this.id}/attributes`,
           {
             params: { type: 'many' }
           }
@@ -169,7 +182,7 @@ export default {
       } else if (this.activeIndex === '2') {
         // 根据分类ID
         const { data: res } = await this.$http.get(
-          `rest/goods/category/${this.cateId}/attributes`,
+          `rest/attribute/${this.id}/attributes`,
           {
             params: { type: 'only' }
           }

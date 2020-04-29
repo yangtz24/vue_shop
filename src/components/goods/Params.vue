@@ -156,7 +156,7 @@
 
     <!-- 添加参数对话框 -->
     <el-dialog
-      title="'添加' + titleText"
+      :title="'添加' + titleText"
       :visible.sync="addDialogVisible"
       width="50%"
       @close="addDialogClosed"
@@ -181,7 +181,7 @@
 
     <!-- 编辑对话框 -->
     <el-dialog
-      title="'修改' + titleText"
+      :title="'修改' + titleText"
       :visible.sync="editDialogVisible"
       width="50%"
       @close="editDialogClosed"
@@ -235,7 +235,7 @@ export default {
       },
       // 修改对话框显示隐藏
       editDialogVisible: false,
-      // 修改变淡数据对象
+      // 修改表单数据对象
       editForm: {},
       // 修改表单验证规则
       editFormRules: {
@@ -250,13 +250,12 @@ export default {
   methods: {
     // 获取商品分类列表
     async getCategoryList() {
-      const { data: res } = await this.$http.get('rest/goods/category/all')
+      const { data: res } = await this.$http.get('rest/goods/category/parent')
       if (res.code !== 200) {
         return this.$message.error('获取商品全部分类失败！！！')
       }
 
       this.categoryList = this.getTreeData(res.data)
-      console.log(this.categoryList)
     },
     // 解决出现空面板情况
     getTreeData(data) {
@@ -326,11 +325,13 @@ export default {
       this.$refs.addFormRef.validate(async valid => {
         if (!valid) return
 
+        const cateId = this.selectedCateKeys[this.selectedCateKeys.length - 1]
+
         const { data: res } = await this.$http.post(
-          `rest/goods/category/${this.id}/attributes`,
+          `rest/attribute/${cateId}`,
           {
             name: this.addForm.name,
-            sel: this.activeName
+            type: this.activeName
           }
         )
 
@@ -345,9 +346,10 @@ export default {
     },
     // 编辑
     async showEditDialog(attrId) {
+      const cateId = this.selectedCateKeys[this.selectedCateKeys.length - 1]
       // 查询当前参数的信息
       const { data: res } = await this.$$http.get(
-        `rest/goods/category/${this.cateId}/attributes/${attrId}`,
+        `rest/attribute/${cateId}/${attrId}`,
         {
           params: { sel: this.activeName }
         }
@@ -369,7 +371,7 @@ export default {
         if (!valid) return
 
         const { data: res } = await this.$http.put(
-          `rest/goods/category/${this.cateId}/attributes/${this.editForm.attrId}`,
+          `rest/attribute/${this.id}/${this.editForm.id}`,
           {
             name: this.addForm.name,
             sel: this.activeName
