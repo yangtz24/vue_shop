@@ -85,7 +85,7 @@
                   type="danger"
                   icon="el-icon-delete"
                   size="mini"
-                  @click="removeParams(scope.row.attrId)"
+                  @click="removeParams(scope.row.id)"
                 ></el-button>
               </template>
             </el-table-column>
@@ -169,8 +169,11 @@
         label-width="100px"
         class="demo-ruleForm"
       >
-        <el-form-item :label="titleText" prop="name">
+        <el-form-item label="名称" prop="name">
           <el-input v-model="addForm.name"></el-input>
+        </el-form-item>
+        <el-form-item label="描述" prop="values">
+          <el-input v-model="addForm.values"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -188,8 +191,11 @@
     >
       <!-- 添加参数对话框 -->
       <el-form :model="editForm" :rules="editFormRules" ref="editFormRef" label-width="100px">
-        <el-form-item :label="titleText" prop="name">
+        <el-form-item label="名称" prop="name">
           <el-input v-model="editForm.name"></el-input>
+        </el-form-item>
+        <el-form-item label="描述" prop="values">
+          <el-input v-model="editForm.values"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -227,19 +233,26 @@ export default {
       addDialogVisible: false,
       // 表单参数收集对象
       addForm: {
-        name: ''
+        name: '',
+        values: ''
       },
       // 表单验证规则
       addFormRules: {
-        name: [{ required: true, message: '请输入参数名称', trigger: 'blur' }]
+        name: [{ required: true, message: '请输入参数名称', trigger: 'blur' }],
+        values: [{ required: true, message: '请输入描述信息', trigger: 'blur' }]
       },
       // 修改对话框显示隐藏
       editDialogVisible: false,
       // 修改表单数据对象
-      editForm: {},
+      editForm: {
+        id: '',
+        name: '',
+        values: ''
+      },
       // 修改表单验证规则
       editFormRules: {
-        name: [{ required: true, message: '请输入参数名称', trigger: 'blur' }]
+        name: [{ required: true, message: '请输入参数名称', trigger: 'blur' }],
+        values: [{ required: true, message: '请输入描述信息', trigger: 'blur' }]
       },
       // 控制按钮与文本框切换
       inputVisible: false,
@@ -331,7 +344,8 @@ export default {
           `rest/attribute/${cateId}`,
           {
             name: this.addForm.name,
-            type: this.activeName
+            type: this.activeName,
+            values: this.addForm.values
           }
         )
 
@@ -348,33 +362,37 @@ export default {
     async showEditDialog(attrId) {
       const cateId = this.selectedCateKeys[this.selectedCateKeys.length - 1]
       // 查询当前参数的信息
-      const { data: res } = await this.$$http.get(
+      const { data: res } = await this.$http.get(
         `rest/attribute/${cateId}/${attrId}`,
         {
-          params: { sel: this.activeName }
+          params: { type: this.activeName }
         }
       )
 
       if (res.code !== 200) {
-        return this.$message.error('获取商品参数信息失败！！！')
+        return this.$message.error('获取商品参数详情信息失败！！！')
       }
+      console.log(res.data)
       this.editForm = res.data
       this.editDialogVisible = true
     },
     // 重置修改的表单
     editDialogClosed() {
-      this.$refs.addFormRef.resetFields()
+      this.$refs.editFormRef.resetFields()
     },
     // 修改
     editParams() {
-      this.$refs.addFormRef.validate(async valid => {
+      this.$refs.editFormRef.validate(async valid => {
         if (!valid) return
 
+        const cateId = this.selectedCateKeys[this.selectedCateKeys.length - 1]
+
         const { data: res } = await this.$http.put(
-          `rest/attribute/${this.id}/${this.editForm.id}`,
+          `rest/attribute/${cateId}/${this.editForm.id}`,
           {
-            name: this.addForm.name,
-            sel: this.activeName
+            name: this.editForm.name,
+            type: this.activeName,
+            values: this.editForm.values
           }
         )
 
@@ -383,7 +401,7 @@ export default {
         }
 
         this.$message.success('修改参数成功！！！')
-        this.addDialogVisible = false
+        this.editDialogVisible = false
         this.getParamsData()
       })
     },
@@ -403,9 +421,11 @@ export default {
         return this.$message.info('已取消该操作')
       }
 
+      const cateId = this.selectedCateKeys[this.selectedCateKeys.length - 1]
+
       // 删除请求
       const { data: res } = await this.$http.delete(
-        `rest/goods/category/${this.cateId}/attributes/${attrId}`
+        `rest/attribute/${cateId}/${attrId}`
       )
       if (res.code !== 200) {
         return this.$message.error('删除参数失败！！！')
