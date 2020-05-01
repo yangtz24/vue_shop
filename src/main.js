@@ -11,22 +11,44 @@ import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 
 import TreeTable from 'vue-table-with-tree-grid';
+
+// 富文本编辑器
+import VueQuillEditor from 'vue-quill-editor'
+// require styles
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
+
+import NProgress from 'nprogress'
+import 'nprogress/nprogress.css'
+
 // 请求
 import axios from 'axios';
 Vue.prototype.$http = axios;
-// axios请求拦截
+
+axios.defaults.baseURL = '/api';
+// axios请求拦截 展示进度条 NProgress.start();
 axios.interceptors.request.use(config => {
+  NProgress.start();
   config.headers.Authorization = window.sessionStorage.getItem('token')
   // 最后必须返回 config
   return config
 })
-axios.defaults.baseURL = '/api';
 
-Vue.use(ElementUI); // 使用elementUI
+// response  隐藏进度条  NProgress.done();
+axios.interceptors.request.use(config => {
+  NProgress.done();
+  // 最后必须返回 config
+  return config
+})
+// 使用elementUI
+Vue.use(ElementUI);
 
 Vue.config.productionTip = false;
 
 Vue.component('tree-table', TreeTable)
+
+Vue.use(VueQuillEditor)
 
 Vue.filter('dataFormate', function(originVal) {
   const dt = new Date(originVal)

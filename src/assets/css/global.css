@@ -33,3 +33,7 @@ body,
 .el-step_title {
     font-size: 15px;
 }
+
+.ql-editor {
+    min-height: 300px;
+}
