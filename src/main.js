@@ -36,7 +36,7 @@ axios.interceptors.request.use(config => {
 })
 
 // response  隐藏进度条  NProgress.done();
-axios.interceptors.request.use(config => {
+axios.interceptors.response.use(config => {
   NProgress.done();
   // 最后必须返回 config
   return config

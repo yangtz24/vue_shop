@@ -28,7 +28,7 @@ export default {
     // 3. 基于准备好的dom，初始化echarts实例
     var myChart = echarts.init(document.getElementById('main'))
 
-    const { data: res } = await this.$http.get('rest/data/statistics/type/1')
+    const { data: res } = await this.$http.get('rest/report')
     if (res.code !== 200) {
       return this.$message.error('获取数据失败！！！')
     }
@@ -60,41 +60,6 @@ export default {
 
     // 5.使用刚指定的配置项和数据显示图表。
     myChart.setOption(result)
-  },
-  data() {
-    return {
-      // 需要跟请求的折线图数据合并的options
-      options: {
-        title: {
-          text: '用户来源'
-        },
-        tooltip: {
-          trigger: 'axis',
-          axisPointer: {
-            type: 'cross',
-            label: {
-              backgroundColor: '#E9EEF3'
-            }
-          }
-        },
-        grid: {
-          left: '3%',
-          right: '4%',
-          bottom: '3%',
-          containLabel: true
-        },
-        xAxis: [
-          {
-            boundaryGap: false
-          }
-        ],
-        yAxis: [
-          {
-            type: 'value'
-          }
-        ]
-      }
-    }
   },
   methods: {}
 }

@@ -23,19 +23,24 @@
       <el-table :data="orderList" border stripe>
         <!-- 索引列 -->
         <el-table-column type="index"></el-table-column>
-        <el-table-column label="订单编号" prop="number"></el-table-column>
-        <el-table-column label="订单价格(元)" prop="price"></el-table-column>
+        <el-table-column label="订单编号" prop="orderNumber"></el-table-column>
+        <el-table-column label="订单价格(元)" prop="orderPrice"></el-table-column>
         <el-table-column label="是否付款" prop="payStatus">
           <template slot-scope="scope">
             <el-tag type="success" v-if="scope.row.payStatus === 1">已付款</el-tag>
             <el-tag type="danger" v-else>未付款</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="是否发货" prop="isSend"></el-table-column>
+        <el-table-column label="是否发货" prop="isSend">
+          <template slot-scope="scope">
+            <el-tag type="success" v-if="scope.row.isSend === 1">已发货</el-tag>
+          <el-tag type="danger" v-else>未发货</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="下单时间" prop="createTime" width="180px">
           <template slot-scope="scope">{{scope.row.createTime | dataFormate}}</template>
         </el-table-column>
-        <el-table-column label="操作" width="130px">
+        <el-table-column label="操作">
           <template slot-scope="scope">
             <el-button type="primary" icon="el-icon-edit" size="mini" @click="showBox"></el-button>
             <el-button
@@ -96,7 +101,7 @@
     >
       <el-timeline>
         <el-timeline-item
-          v-for="(activity, index) in activities"
+          v-for="(activity, index) in locationInfo"
           :key="index"
           :timestamp="activity.time"
         >{{activity.context}}</el-timeline-item>
