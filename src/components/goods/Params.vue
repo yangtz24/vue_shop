@@ -41,10 +41,16 @@
           >添加参数</el-button>
           <!-- 动态参数数据表格 -->
           <el-table :data="manyTableData" border stripe>
+            <!-- 展开行 -->
             <el-table-column type="expand">
               <template slot-scope="scope">
                 <!-- 循环渲染tag标签 -->
-                <el-tag v-for="(item, i) in scope.row.attrVals" :key="i" closable>{{item}}</el-tag>
+                <el-tag
+                  v-for="(item, i) in scope.row.attrVals"
+                  :key="i"
+                  closable
+                  @close="handleClosed(i, scope.row)"
+                >{{item}}</el-tag>
                 <!-- 输入的文本框 -->
                 <el-input
                   class="input-new-tag"
@@ -52,8 +58,8 @@
                   v-model="scope.row.inputValue"
                   ref="saveTagInput"
                   size="small"
-                  @keyup.enter.native="handleInputConfirm"
-                  @blur="handleInputConfirm"
+                  @keyup.enter.native="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm(scope.row)"
                 ></el-input>
                 <!-- 添加按钮 -->
                 <el-button
@@ -79,7 +85,7 @@
                   type="danger"
                   icon="el-icon-delete"
                   size="mini"
-                  @click="removeParams(scope.row.attrId)"
+                  @click="removeParams(scope.row.id)"
                 ></el-button>
               </template>
             </el-table-column>
@@ -95,7 +101,35 @@
           >添加属性</el-button>
           <!-- 静态属性数据表格 -->
           <el-table :data="onlyTableData" border stripe>
-            <el-table-column type="expand"></el-table-column>
+            <!-- 展开行 -->
+            <el-table-column type="expand">
+              <template slot-scope="scope">
+                <!-- 循环渲染tag标签 -->
+                <el-tag
+                  v-for="(item, i) in scope.row.attrVals"
+                  :key="i"
+                  closable
+                  @close="handleClosed(i, scope.row)"
+                >{{item}}</el-tag>
+                <!-- 输入的文本框 -->
+                <el-input
+                  class="input-new-tag"
+                  v-if="scope.row.inputVisible"
+                  v-model="scope.row.inputValue"
+                  ref="saveTagInput"
+                  size="small"
+                  @keyup.enter.native="handleInputConfirm(scope.row)"
+                  @blur="handleInputConfirm(scope.row)"
+                ></el-input>
+                <!-- 添加按钮 -->
+                <el-button
+                  v-else
+                  class="button-new-tag"
+                  size="small"
+                  @click="showInput(scope.row)"
+                >+ New Tag</el-button>
+              </template>
+            </el-table-column>
             <!-- 索引列 -->
             <el-table-column type="index"></el-table-column>
             <el-table-column label="属性名称" prop="name"></el-table-column>
@@ -122,7 +156,7 @@
 
     <!-- 添加参数对话框 -->
     <el-dialog
-      title="'添加' + titleText"
+      :title="'添加' + titleText"
       :visible.sync="addDialogVisible"
       width="50%"
       @close="addDialogClosed"
@@ -135,8 +169,11 @@
         label-width="100px"
         class="demo-ruleForm"
       >
-        <el-form-item :label="titleText" prop="name">
+        <el-form-item label="名称" prop="name">
           <el-input v-model="addForm.name"></el-input>
+        </el-form-item>
+        <el-form-item label="描述" prop="values">
+          <el-input v-model="addForm.values"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -147,15 +184,18 @@
 
     <!-- 编辑对话框 -->
     <el-dialog
-      title="'修改' + titleText"
+      :title="'修改' + titleText"
       :visible.sync="editDialogVisible"
       width="50%"
       @close="editDialogClosed"
     >
       <!-- 添加参数对话框 -->
       <el-form :model="editForm" :rules="editFormRules" ref="editFormRef" label-width="100px">
-        <el-form-item :label="titleText" prop="name">
+        <el-form-item label="名称" prop="name">
           <el-input v-model="editForm.name"></el-input>
+        </el-form-item>
+        <el-form-item label="描述" prop="values">
+          <el-input v-model="editForm.values"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -193,19 +233,26 @@ export default {
       addDialogVisible: false,
       // 表单参数收集对象
       addForm: {
-        name: ''
+        name: '',
+        values: ''
       },
       // 表单验证规则
       addFormRules: {
-        name: [{ required: true, message: '请输入参数名称', trigger: 'blur' }]
+        name: [{ required: true, message: '请输入参数名称', trigger: 'blur' }],
+        values: [{ required: true, message: '请输入描述信息', trigger: 'blur' }]
       },
       // 修改对话框显示隐藏
       editDialogVisible: false,
-      // 修改变淡数据对象
-      editForm: {},
+      // 修改表单数据对象
+      editForm: {
+        id: '',
+        name: '',
+        values: ''
+      },
       // 修改表单验证规则
       editFormRules: {
-        name: [{ required: true, message: '请输入参数名称', trigger: 'blur' }]
+        name: [{ required: true, message: '请输入参数名称', trigger: 'blur' }],
+        values: [{ required: true, message: '请输入描述信息', trigger: 'blur' }]
       },
       // 控制按钮与文本框切换
       inputVisible: false,
@@ -216,7 +263,7 @@ export default {
   methods: {
     // 获取商品分类列表
     async getCategoryList() {
-      const { data: res } = await this.$http.get('rest/goods/category/all')
+      const { data: res } = await this.$http.get('rest/goods/category/parent')
       if (res.code !== 200) {
         return this.$message.error('获取商品全部分类失败！！！')
       }
@@ -248,14 +295,19 @@ export default {
     async getParamsData() {
       if (this.selectedCateKeys.length !== 3) {
         this.selectedCateKeys = []
+        this.manyTableData = []
+        this.onlyTableData = []
         return 0
       }
 
+      // 获取ID
+      const id = this.selectedCateKeys[this.selectedCateKeys.length - 1]
+
       // 根据所选分类ID，获取参数
       const { data: res } = await this.$http.get(
-        `rest/attribute/${this.id}`,
+        `rest/attribute/${id}/attributes`,
         {
-          params: { sel: this.activeName }
+          params: { type: this.activeName }
         }
       )
       if (res.code !== 200) {
@@ -286,11 +338,14 @@ export default {
       this.$refs.addFormRef.validate(async valid => {
         if (!valid) return
 
+        const cateId = this.selectedCateKeys[this.selectedCateKeys.length - 1]
+
         const { data: res } = await this.$http.post(
-          `rest/goods/category/${this.id}/attributes`,
+          `rest/attribute/${cateId}`,
           {
             name: this.addForm.name,
-            sel: this.activeName
+            type: this.activeName,
+            values: this.addForm.values
           }
         )
 
@@ -305,34 +360,39 @@ export default {
     },
     // 编辑
     async showEditDialog(attrId) {
+      const cateId = this.selectedCateKeys[this.selectedCateKeys.length - 1]
       // 查询当前参数的信息
-      const { data: res } = await this.$$http.get(
-        `rest/goods/category/${this.cateId}/attributes/${attrId}`,
+      const { data: res } = await this.$http.get(
+        `rest/attribute/${cateId}/${attrId}`,
         {
-          params: { sel: this.activeName }
+          params: { type: this.activeName }
         }
       )
 
       if (res.code !== 200) {
-        return this.$message.error('获取商品参数信息失败！！！')
+        return this.$message.error('获取商品参数详情信息失败！！！')
       }
+      console.log(res.data)
       this.editForm = res.data
       this.editDialogVisible = true
     },
     // 重置修改的表单
     editDialogClosed() {
-      this.$refs.addFormRef.resetFields()
+      this.$refs.editFormRef.resetFields()
     },
     // 修改
     editParams() {
-      this.$refs.addFormRef.validate(async valid => {
+      this.$refs.editFormRef.validate(async valid => {
         if (!valid) return
 
+        const cateId = this.selectedCateKeys[this.selectedCateKeys.length - 1]
+
         const { data: res } = await this.$http.put(
-          `rest/goods/category/${this.cateId}/attributes/${this.editForm.attrId}`,
+          `rest/attribute/${cateId}/${this.editForm.id}`,
           {
-            name: this.addForm.name,
-            sel: this.activeName
+            name: this.editForm.name,
+            type: this.activeName,
+            values: this.editForm.values
           }
         )
 
@@ -341,7 +401,7 @@ export default {
         }
 
         this.$message.success('修改参数成功！！！')
-        this.addDialogVisible = false
+        this.editDialogVisible = false
         this.getParamsData()
       })
     },
@@ -361,9 +421,11 @@ export default {
         return this.$message.info('已取消该操作')
       }
 
+      const cateId = this.selectedCateKeys[this.selectedCateKeys.length - 1]
+
       // 删除请求
       const { data: res } = await this.$http.delete(
-        `rest/goods/category/${this.cateId}/attributes/${attrId}`
+        `rest/attribute/${cateId}/${attrId}`
       )
       if (res.code !== 200) {
         return this.$message.error('删除参数失败！！！')
@@ -373,10 +435,50 @@ export default {
       this.getParamsData()
     },
     // 文本框失去焦点
-    handleInputConfirm() {},
+    async handleInputConfirm(row) {
+      if (row.inputValue.length === 0) {
+        row.inputValue = ''
+        row.inputVisible = false
+        return 0
+      }
+
+      // 输入内容，后续处理
+      row.vals.push(row.inputValue.trim())
+      row.inputValue = ''
+      row.inputVisible = false
+
+      // 添加请求
+      this.setAttrVals(row)
+    },
+    async setAttrVals(row) {
+      // 添加参数请求
+      const { data: res } = await this.$http.put(
+        `rest/attribute/${this.cateId}/attributes/${row.attrId}`,
+        {
+          attr_name: row.attr_name,
+          attr_sel: row.attr_sel,
+          attr_vals: row.attrVals.join('')
+        }
+      )
+
+      if (res.code !== 200) {
+        return this.$message.error('修改参数失败！！！')
+      }
+      this.$message.success('修改参数成功！！！')
+    },
     // 文本输入框
     showInput(row) {
       row.inputVisible = true
+      // 文本框自动获得焦点
+      // $nextTick：当页面元素被重新渲染之后，会被调用
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus()
+      })
+    },
+    handleClosed(i, row) {
+      row.attr_vals.splice(i, 1)
+
+      this.setAttrVals(row)
     }
   },
   // 计算属性

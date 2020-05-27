@@ -113,6 +113,8 @@ export default {
     align-items: center;
     span {
       margin-left: 15px;
+      font-size: x-large;
+      font-weight: bold;
     }
   }
 }

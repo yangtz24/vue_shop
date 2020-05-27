@@ -8,7 +8,10 @@ import Authorities from '../components/power/Authorities.vue'
 import Roles from '../components/power/Roles.vue'
 import Category from '../components/goods/Category.vue'
 import Params from '../components/goods/Params.vue'
-
+import GoodsList from '../components/goods/GoodsList.vue'
+import GoodsAdd from '../components/goods/GoodsAdd.vue'
+import Order from '../components/order/Order.vue'
+import DataStatistics from '../components/dataStatistics/DataStatistics.vue'
 Vue.use(VueRouter)
 
 const router = new VueRouter({
@@ -26,7 +29,12 @@ const router = new VueRouter({
         { path: '/categories', component: Category },
         { path: '/authorities', component: Authorities },
         { path: '/roles', component: Roles },
-        { path: '/params', component: Params }
+        { path: '/params', component: Params },
+        { path: '/goods', component: GoodsList },
+        { path: '/goods/add', component: GoodsAdd },
+        { path: '/orders', component: Order },
+        { path: '/statistics', component: DataStatistics }
+
       ]
     }
   ]
