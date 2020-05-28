@@ -4,7 +4,7 @@
       <div class="login_box">
         <!-- 头像区域 -->
         <div class="avatar_box">
-          <img src="../assets/logo.png" alt="" />
+          <img src="../assets/logo.png" alt />
         </div>
         <!-- 登录表单区域 -->
         <el-form
@@ -16,10 +16,7 @@
         >
           <!-- 用户名 -->
           <el-form-item prop="username">
-            <el-input
-              v-model="loginForm.username"
-              prefix-icon="iconfont icon-user"
-            ></el-input>
+            <el-input v-model="loginForm.username" prefix-icon="iconfont icon-user"></el-input>
           </el-form-item>
           <!-- 密码 -->
           <el-form-item>
@@ -33,9 +30,7 @@
           <el-form-item class="btns">
             <el-button type="primary" @click="login">登录</el-button>
             <el-button type="info" @click="resetLoginForm">重置</el-button>
-            <el-button type="primary" @click.native.prevent="handleTry"
-              >获取体验账号</el-button
-            >
+            <el-button type="primary" @click.native.prevent="handleTry">获取体验账号</el-button>
             <!-- <a href="">去注册</a> -->
           </el-form-item>
         </el-form>
@@ -50,19 +45,12 @@
       width="30%"
     >
       <div style="text-align: center">
-        <span class="font-title-large"
-          ><span class="color-main font-extra-large">关注公众号</span>回复<span
-            class="color-main font-extra-large"
-            >体验</span
-          >获取体验账号</span
-        >
+        <span class="font-title-large">
+          <span class="color-main font-extra-large">关注公众号</span>回复
+          <span class="color-main font-extra-large">体验</span>获取体验账号
+        </span>
         <br />
-        <img
-          src="/dist/img/kb.b5ea55eb.jpg"
-          width="160"
-          height="160"
-          style="margin-top: 10px"
-        />
+        <img src="../assets/imgs/kb.jpg" width="160" height="160" style="margin-top: 10px" />
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="dialogConfirm">确定</el-button>
