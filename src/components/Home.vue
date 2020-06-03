@@ -72,7 +72,10 @@ export default {
     }
   },
   methods: {
-    logout() {
+    async logout() {
+      const { data: res } = await this.$http.get('rest/admin/logout')
+      if (res.code !== 200) return this.$message.error(res.message)
+      this.$message.success('退出成功')
       window.sessionStorage.clear()
       this.$router.push('/login')
     },
