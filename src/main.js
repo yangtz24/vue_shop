@@ -30,7 +30,7 @@ axios.defaults.baseURL = '/api';
 // axios请求拦截 展示进度条 NProgress.start();
 axios.interceptors.request.use(config => {
   NProgress.start();
-  config.headers.Authorization = window.sessionStorage.getItem('token')
+  config.headers.Authorization = 'Bearer ' + window.sessionStorage.getItem('token')
   // 最后必须返回 config
   return config
 })
