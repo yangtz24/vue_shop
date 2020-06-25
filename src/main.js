@@ -26,7 +26,7 @@ import 'nprogress/nprogress.css'
 import axios from 'axios';
 Vue.prototype.$http = axios;
 
-axios.defaults.baseURL = '/api';
+// axios.defaults.baseURL = '/api';
 // axios请求拦截 展示进度条 NProgress.start();
 axios.interceptors.request.use(config => {
   NProgress.start();
